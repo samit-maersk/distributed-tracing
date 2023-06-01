@@ -12,9 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.kafka.config.TopicBuilder;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,16 +28,15 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
 import java.util.Optional;
 
 @SpringBootApplication
 @Slf4j
-public class ApiAndKafkaProducer {
+public class ApiApplication {
 
 	public static void main(String[] args) {
 		Hooks.enableAutomaticContextPropagation();
-		SpringApplication.run(ApiAndKafkaProducer.class, args);
+		SpringApplication.run(ApiApplication.class, args);
 	}
 
 

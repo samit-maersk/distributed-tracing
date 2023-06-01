@@ -9,10 +9,10 @@
 		<relativePath/>
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>api-n-kafka-producer</artifactId>
+	<artifactId>api</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
-	<name>api-n-kafka-producer</name>
-	<description>api-n-kafka-producer with spring boot 3.x.x</description>
+	<name>api</name>
+	<description>api with spring boot 3.x.x</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
