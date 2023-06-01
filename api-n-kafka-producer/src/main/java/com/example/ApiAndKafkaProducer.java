@@ -12,7 +12,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +30,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
 import java.util.Optional;
 
 @SpringBootApplication
@@ -95,7 +98,7 @@ class UserServices {
 						user.company(),
 						employmentDetails
 				)
-		).doOnNext(user -> {
+		).doFinally(user -> {
 			log.info("message produced to kafka");
 			kafkaTemplate.send(topicName, String.format("allUsers being viewed by %s", userName()));
 		});
@@ -147,7 +150,6 @@ class Configurations {
 		return httpServiceProxyFactory.createClient(UserClient.class);
 	}
 
-	//One time, This will create a Topic If it's not vailable
 	@Bean
 	public NewTopic createTopic(@Value("${spring.kafka.topic}") String topicName) {
 		return TopicBuilder.name(topicName).partitions(1).replicas(1).build();
