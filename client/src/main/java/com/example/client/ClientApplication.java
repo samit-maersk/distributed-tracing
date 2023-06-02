@@ -1,5 +1,6 @@
 package com.example.client;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -8,9 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.reactive.config.CorsRegistry;
-import org.springframework.web.reactive.config.EnableWebFlux;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.support.WebClientAdapter;
@@ -43,14 +42,14 @@ class Client {
 		return RouterFunctions
 				.route()
 				.path("/employee", builder -> builder
-						.GET("/", request -> ServerResponse.ok().body(personClient.allPerson(), Person.class))
+						.GET("", request -> ServerResponse.ok().body(personClient.allPerson(), Person.class))
 						.GET("/{id}", request -> {
 							var id = Integer.parseInt(request.pathVariable("id"));
 							return ServerResponse.ok().body(personClient.personById(id), Person.class);
 						})
 				)
 				.after((request, response) -> {
-					log.info("{} {}",request.path(), response.statusCode());
+					log.info("{} {} {}",request.method(), request.path(), response.statusCode());
 					return response;
 				})
 				.build();
@@ -73,10 +72,11 @@ interface PersonClient {
 }
 
 @Component
+@RequiredArgsConstructor
 class Configurations {
-
+	private final WebClient.Builder builder;
 	@Bean
-	PersonClient personClient(WebClient.Builder builder, @Value("${spring.application.tracing-demo.host}") String baseUrl) {
+	PersonClient personClient(@Value("${spring.application.api.host}") String baseUrl) {
 		builder.defaultHeader("Accept", "application/json");
 		var webClientAdapter = WebClientAdapter.forClient(builder.baseUrl(baseUrl).build());
 		var httpServiceProxyFactory = HttpServiceProxyFactory.builder(webClientAdapter).build();

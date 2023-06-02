@@ -1,12 +1,12 @@
 server:
-  port: 8081
+  port: 8080
 
 spring:
   application:
     name: @project.artifactId@
     version: @project.version@
-    tracing-demo:
-      host: http://localhost:8080
+    api:
+      host: http://localhost:8081
 
 logging:
   pattern:

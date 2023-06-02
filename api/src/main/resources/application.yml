@@ -1,9 +1,14 @@
+server:
+  port: 8081
 spring:
   application:
     name: @project.artifactId@
     version: @project.version@
     jsonplaceHolder:
       host: https://jsonplaceholder.typicode.com/
+    kafka-producer:
+      auditlog:
+        host: http://localhost:8082
   r2dbc:
     url: r2dbc:h2:file:///./.db
     observation:
