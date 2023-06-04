@@ -1,10 +1,11 @@
 import React from 'react'
+import Result from './Result'
 
 const Results = () => {
 
     return (
-        <table className="table table-striped">
-            <thead class="table-light">
+        <table className="table">
+            <thead className="table-light">
                 <tr>
                     <th scope="col">Name</th>
                     <th scope="col">Symbol</th>
@@ -12,16 +13,7 @@ const Results = () => {
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>Apple Inc.</td>
-                    <td>AAPL</td>
-                    <td>?</td>
-                </tr>
-                <tr>
-                    <td>Apple Inc.</td>
-                    <td>AAPL</td>
-                    <td>123.45</td>
-                </tr>
+                {[1,2,3].map((n,i) => <Result key={i} data={n} index={i}/>)}
             </tbody>
         </table>
 

@@ -9,7 +9,7 @@ const Dashboard = () => {
                 <div className="form-floating">
                     <input className="form-control" placeholder="Search" id="searchBox"></input>
                     <label htmlFor="searchBox">
-                        <i className="bi bi-search"></i> Search
+                        <i className="bi bi-search"></i>
                     </label>
                 </div>
                 
@@ -18,7 +18,7 @@ const Dashboard = () => {
                 </button>
 
                 <button className="btn btn-danger ms-2">
-                <i class="bi bi-x-circle"></i>
+                    <i className="bi bi-x-circle"></i>
                 </button>
                 
             </div>
