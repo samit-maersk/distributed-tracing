@@ -22,7 +22,6 @@ management:
       application: ${spring.application.name}
     distribution:
       percentiles-histogram:
-        all: true
         http.server.requests: true
   tracing:
     sampling:

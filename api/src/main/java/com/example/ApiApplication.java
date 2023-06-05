@@ -32,6 +32,8 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.util.Optional;
+
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @SpringBootApplication
@@ -97,8 +99,11 @@ class UserServices {
     }
 
     public Mono<User> userById(int id) {
+        if(id == 8) throw new RuntimeException("test");
         return userClient.userById(id)
-                .zipWhen(user -> employmentDetailsRepository.findById(id),(user,emp) -> new User(user.id(),user.name(),user.email(),user.address(),user.phone(),user.website(),user.company(),emp))
+                .zipWhen(user -> employmentDetailsRepository.findById(id),
+                        (user,emp) -> new User(user.id(),user.name(),user.email(),user.address(),user.phone(),user.website(),user.company(),emp)
+                )
 //                .flatMap(user -> {
 //                   try{
 //                       return produceClient.auditLog("TEST111").then(Mono.just(user));
