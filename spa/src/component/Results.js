@@ -16,7 +16,7 @@ const Results = () => {
 
     if(error) {
         return (
-            <h1>Error {error?.message}</h1>
+            <h1>Error {error}</h1>
         )
     }
 
@@ -24,9 +24,8 @@ const Results = () => {
         <table className="table">
             <thead className="table-light">
                 <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Symbol</th>
-                    <th scope="col">Price</th>
+                    {Object.keys(data[0]).map((n,i) => <th key={i} scope="col">{n}</th>)}
+                    <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>

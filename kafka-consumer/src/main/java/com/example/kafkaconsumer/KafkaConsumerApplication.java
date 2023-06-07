@@ -59,6 +59,7 @@ class KafkaConsumer {
 				.route()
 				.GET("/auditlog", request -> ServerResponse.ok().body(auditLogRepository.findAll(), AuditLog.class))
 				.after((request, response) -> {
+					request.headers().asHttpHeaders().forEach((k, v) -> log.debug("{}: {}", k, v));
 					log.info("{} {} {}",request.method(), request.path(), response.statusCode());
 					return response;
 				})

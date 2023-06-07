@@ -5,7 +5,6 @@
     <springProperty scope="context" name="lokiUri" source="loki.uri"/>
 
     <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
-        <batchTimeoutMs>2000</batchTimeoutMs>
         <http>
             <url>${lokiUri:-http://localhost:3100/loki/api/v1/push}</url>
         </http>

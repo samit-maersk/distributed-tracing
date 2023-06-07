@@ -10,7 +10,7 @@ export const fetchAll = createAsyncThunk(
 
 const initialState = {
   data: [],
-  error: [],
+  error: null,
   loading: false
 }
 
@@ -31,7 +31,7 @@ export const clientSlice = createSlice({
     )
     builder.addCase(fetchAll.rejected, (state, action) => {
         state.loading = false
-        state.error = action.error
+        state.error = action.error.message
         }
     )
   },

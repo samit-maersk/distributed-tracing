@@ -1,6 +1,7 @@
 package com.example;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +57,7 @@ public class ApiApplication {
                     return ServerResponse.ok().body(userServices.userById(id), User.class);
                 })
                 .after((request, response) -> {
+                    request.headers().asHttpHeaders().forEach((k, v) -> log.debug("{}: {}", k, v));
                     log.info("{} {} {}", request.method(), request.path(), response.statusCode());
                     return response;
                 })
@@ -76,8 +78,8 @@ record Company(String name, String catchPhrase, String bs) {
 record Geo(String lat, String lng) {
 }
 
-record EmploymentDetails(@Id int id, String designation, int salary) {
-}
+@Builder
+record EmploymentDetails(@Id int id, String designation, int salary) { }
 
 @Repository
 interface EmploymentDetailsRepository extends R2dbcRepository<EmploymentDetails, Integer> {
@@ -99,26 +101,24 @@ class UserServices {
     }
 
     public Mono<User> userById(int id) {
-        if(id == 8) throw new RuntimeException("test");
-        return userClient.userById(id)
-                .zipWhen(user -> employmentDetailsRepository.findById(id),
-                        (user,emp) -> new User(user.id(),user.name(),user.email(),user.address(),user.phone(),user.website(),user.company(),emp)
-                )
-//                .flatMap(user -> {
-//                   try{
-//                       return produceClient.auditLog("TEST111").then(Mono.just(user));
-//                   }
-//                   catch (Exception e){
-//                       log.error("error: {}", e.getMessage());
-//                       return Mono.just(user);
-//                   }
-//                })
+        var user = userClient.userById(id)
+                .map(Optional::ofNullable)
+                .defaultIfEmpty(Optional.empty());
+
+        var emp = employmentDetailsRepository
+                .findById(id)
+                .map(Optional::ofNullable)
+                .defaultIfEmpty(Optional.of(EmploymentDetails.builder().build()))
+                .onErrorReturn(Optional.of(EmploymentDetails.builder().build()));
+
+        return user.zipWhen(user1 -> emp, (t1,t2) -> {
+                            var u = t1.get();
+                            var e = t2.get();
+                            return new User(u.id(), u.name(), u.email(), u.address(), u.phone(), u.website(), u.company(), e);
+                        })
                 .doFinally(signal -> produceClient.auditLog(String.format("userById(%s)::%s",id,signal)).subscribe())
                 .onErrorResume(e -> Mono.error(new UserNotFoundException()));
-
     }
-
-
 }
 
 @HttpExchange(url = "/users")

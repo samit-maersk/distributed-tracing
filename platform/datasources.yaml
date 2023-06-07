@@ -44,8 +44,8 @@ datasources:
         tags: [ 'instance', 'pod', 'namespace', 'hostname' ]
         mappedTags: [ { key: 'org' }, { key: 'service.name', value: 'application' }  ]
         mapTagNamesEnabled: true
-        spanStartTimeShift: '1h'
-        spanEndTimeShift: '1h'
+        spanStartTimeShift: '-5m'
+        spanEndTimeShift: '5m'
         filterByTraceID: true
         filterBySpanID: false
         lokiSearch: true

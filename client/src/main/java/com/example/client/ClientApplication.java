@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.reactive.config.CorsRegistry;
+import org.springframework.web.reactive.config.EnableWebFlux;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.support.WebClientAdapter;
@@ -49,6 +50,7 @@ class Client {
 						})
 				)
 				.after((request, response) -> {
+					request.headers().asHttpHeaders().forEach((k, v) -> log.debug("{}: {}", k, v));
 					log.info("{} {} {}",request.method(), request.path(), response.statusCode());
 					return response;
 				})
@@ -85,15 +87,14 @@ class Configurations {
 }
 
 @Configuration
-class WebConfig implements WebFluxConfigurer {
+@EnableWebFlux
+class CorsGlobalConfiguration implements WebFluxConfigurer {
 
 	@Override
-	public void addCorsMappings(CorsRegistry registry) {
-
-		registry.addMapping("*")
+	public void addCorsMappings(CorsRegistry corsRegistry) {
+		corsRegistry.addMapping("/**")
 				.allowedOrigins("*")
 				.allowedMethods("*")
-				.allowCredentials(true).maxAge(3600);
-
+				.maxAge(3600);
 	}
 }
