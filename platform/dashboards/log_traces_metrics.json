@@ -24,133 +24,74 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 3,
   "links": [],
   "liveNow": false,
   "panels": [
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "loki",
+        "uid": "loki"
       },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
+      "description": "",
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 10,
+        "w": 23,
         "x": 0,
         "y": 0
       },
-      "id": 5,
+      "id": 2,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Ascending",
+        "wrapLogMessage": true
       },
-      "pluginVersion": "9.5.2",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "loki",
+            "uid": "loki"
           },
           "editorMode": "builder",
-          "expr": "http_server_requests_seconds_count{application=\"client\", uri=\"/employee\", status=\"200\"}",
-          "range": true,
+          "expr": "{traceId=\"$traceID\"}",
+          "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "/employee - 200 - count",
-      "type": "stat"
+      "title": "Logs with trace ID $traceID",
+      "type": "logs"
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "tempo",
+        "uid": "tempo"
       },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
+      "description": "",
       "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 0
+        "h": 15,
+        "w": 23,
+        "x": 0,
+        "y": 10
       },
       "id": 6,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.5.2",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "tempo",
+            "uid": "tempo"
           },
-          "editorMode": "builder",
-          "expr": "http_server_requests_seconds_count{application=\"client\", uri=\"/employee\", status=\"500\"}",
-          "range": true,
+          "limit": 20,
+          "query": "$traceID",
+          "queryType": "traceql",
           "refId": "A"
         }
       ],
-      "title": "/employee - 500 - count",
-      "type": "stat"
+      "title": "Trace View for trace with id $traceID",
+      "type": "traces"
     },
     {
       "datasource": {
@@ -214,7 +155,7 @@
         "h": 10,
         "w": 23,
         "x": 0,
-        "y": 8
+        "y": 25
       },
       "id": 4,
       "options": {
@@ -237,9 +178,8 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(1, sum by(le) (rate(http_server_requests_seconds_bucket{uri=~\"/employee|/employee/{id}|/person|/person/{id}|/produce/auditlog\"}[$__rate_interval])))",
-          "format": "time_series",
-          "legendFormat": "",
+          "expr": "histogram_quantile(1.00, sum(rate(http_server_requests_seconds_bucket{uri=~\".*\"}[$__rate_interval])) by (le))",
+          "legendFormat": "max",
           "range": true,
           "refId": "A"
         },
@@ -250,7 +190,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.99, sum by(le) (rate(http_server_requests_seconds_bucket{uri=~\"/employee|/employee/{id}|/person|/person/{id}|/produce/auditlog\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{uri=~\".*\"}[$__rate_interval])) by (le))",
+          "hide": false,
+          "legendFormat": "tp99",
           "range": true,
           "refId": "B"
         },
@@ -261,76 +203,19 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "histogram_quantile(0.95, sum by(le) (rate(http_server_requests_seconds_bucket{uri=~\"/employee|/employee/{id}|/person|/person/{id}|/produce/auditlog\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{uri=~\".*\"}[$__rate_interval])) by (le))",
+          "hide": false,
+          "legendFormat": "tp95",
           "range": true,
           "refId": "C"
         }
       ],
       "title": "latency for All",
       "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 18
-      },
-      "id": 7,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "builder",
-          "expr": "http_client_requests_active_seconds_active_count{application=\"api\"}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "/api",
-      "type": "stat"
     }
   ],
   "refresh": "",
+  "revision": 1,
   "schemaVersion": 38,
   "style": "dark",
   "tags": [],
@@ -339,22 +224,26 @@
       {
         "current": {
           "selected": false,
-          "text": "0003776c79e02b6c",
-          "value": "0003776c79e02b6c"
+          "text": "",
+          "value": ""
         },
         "datasource": {
           "type": "loki",
           "uid": "loki"
         },
-        "definition": "label_values(traceID)",
-        "error": {},
+        "definition": "label_values(traceId)",
         "hide": 0,
         "includeAll": false,
         "label": "Trace ID",
         "multi": false,
         "name": "traceID",
         "options": [],
-        "query": "label_values(traceID)",
+        "query": {
+          "label": "traceId",
+          "refId": "LokiVariableQueryEditor-VariableQuery",
+          "stream": "",
+          "type": 1
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -364,13 +253,13 @@
     ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Logs, Traces, Metrics",
   "uid": "szVLMe97z",
-  "version": 6,
+  "version": 1,
   "weekStart": ""
 }

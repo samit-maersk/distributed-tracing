@@ -52,7 +52,7 @@ services:
       - "9411:9411"     # Zipkin
 
   grafana:
-    image: grafana/grafana:9.5.2
+    image: grafana/grafana
     container_name: grafana
     volumes:
       - ./datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
