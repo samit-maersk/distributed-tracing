@@ -11,10 +11,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -30,8 +28,6 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 import java.util.Optional;
 
@@ -57,8 +53,8 @@ public class ApiApplication {
                     return ServerResponse.ok().body(userServices.userById(id), User.class);
                 })
                 .after((request, response) -> {
-                    request.headers().asHttpHeaders().forEach((k, v) -> log.debug("{}: {}", k, v));
                     log.info("{} {} {}", request.method(), request.path(), response.statusCode());
+                    request.headers().asHttpHeaders().forEach((k, v) -> log.info("{}: {}", k, v));
                     return response;
                 })
                 .build();
@@ -94,8 +90,24 @@ class UserServices {
     private final EmploymentDetailsRepository employmentDetailsRepository;
 
     public Flux<User> allUsers() {
-        return userClient.allUsers()
-                .zipWith(employmentDetailsRepository.findAll(), (user, employmentDetails) -> new User(user.id(), user.name(), user.email(), user.address(), user.phone(), user.website(), user.company(), employmentDetails))
+        var allUser = userClient.allUsers()
+                .map(Optional::ofNullable)
+                .defaultIfEmpty(Optional.empty())
+                .onErrorReturn(Optional.empty())
+                .doOnError(e -> log.error("Error while fetching all users {}", e));
+
+        var allUserEmpDetails = employmentDetailsRepository.findAll()
+                .map(Optional::ofNullable)
+                .defaultIfEmpty(Optional.empty())
+                .onErrorReturn(Optional.empty())
+                .doOnError(e -> log.error("Error while fetching all empDetails for users {}", e));
+
+        return allUser.zipWith(allUserEmpDetails, (t1, t2) -> {
+            var u = t1.get();
+            var e = t2.get();
+            return new User(u.id(), u.name(), u.email(), u.address(), u.phone(), u.website(), u.company(), e);
+        })
+                // The trace chain broken from here //TODO find why?
                 .doFinally(signal -> produceClient.auditLog(String.format("allUsers()::%s",signal)).subscribe())
                 .onErrorResume(e -> Mono.error(new UserNotFoundException()));
     }
@@ -152,6 +164,11 @@ class Configurations {
     @Bean
     ProduceClient produceClient(@Value("${spring.application.kafka-producer.auditlog.host}") String baseUrl) {
         builder.baseUrl(baseUrl);
+        builder.filter((request, next) -> {
+            log.info("Request: {} {} Invoked", request.method(), request.url());
+            request.headers().forEach((k, v) -> log.info("{}: {}", k, v));
+            return next.exchange(request);
+        });
         var webClientAdapter = WebClientAdapter.forClient(builder.build());
         var httpServiceProxyFactory = HttpServiceProxyFactory.builder(webClientAdapter).build();
         return httpServiceProxyFactory.createClient(ProduceClient.class);

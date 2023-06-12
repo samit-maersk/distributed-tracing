@@ -49,7 +49,7 @@ class KafkaConsumer {
 		auditLogRepository
 				.save(new AuditLog(0, "UNKNOWN", message, LocalDateTime.now()))
 				.doOnSuccess(s -> log.info("message saved to db"))
-				.doFinally(s -> log.error("message saved to db"))
+				.doOnError(s -> log.error("error during saving to db"))
 				.subscribe();
 	}
 

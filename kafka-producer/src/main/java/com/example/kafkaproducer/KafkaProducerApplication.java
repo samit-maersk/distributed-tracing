@@ -46,8 +46,8 @@ public class KafkaProducerApplication {
 							.doOnError(e -> log.error("error while sending message to kafka", e));
 				})
 				.after((request, response) -> {
-					request.headers().asHttpHeaders().forEach((k, v) -> log.debug("{}: {}", k, v));
 					log.info("{} {} {}",request.method(), request.path(), response.statusCode());
+					request.headers().asHttpHeaders().forEach((k, v) -> log.info("{}: {}", k, v));
 					return response;
 				})
 				.build();
