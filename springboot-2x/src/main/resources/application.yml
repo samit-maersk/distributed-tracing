@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: @project.artifactId@
+  sleuth:
+    propagation:
+      type: W3C
+
+management:
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: "readinessState,diskSpace,ping,r2dbc"
+          show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: info, health, prometheus
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  # enable capturing percentiles
+  metrics:
+    distribution:
+      percentiles:
+        p90: 0.9
+        p95: 0.95
+        p100: 1.0
+      percentiles-histogram:
+        all: true
+        http.server.requests: true
